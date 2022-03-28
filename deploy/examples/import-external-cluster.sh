@@ -1,9 +1,11 @@
 #!/bin/bash
+# run me like: . deploy/examples/import-external-cluster.sh
 set -e
 
 ##############
 # VARIABLES #
 #############
+export NAMESPACE=rook-ceph-external
 MON_SECRET_NAME=rook-ceph-mon
 CSI_RBD_NODE_SECRET_NAME=rook-csi-rbd-node
 CSI_RBD_PROVISIONER_SECRET_NAME=rook-csi-rbd-provisioner

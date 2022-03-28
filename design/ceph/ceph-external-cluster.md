@@ -157,3 +157,41 @@ monitoring:
 4. Create a new metric Service
 
 5. Create an Endpoint resource based out of the IP addresses either discovered or provided by the user in the script
+
+## Steps for creating external rook-ceph cluster
+
+1. Run the python script [create-external-cluster-resources.py](/deploy/examples/create-external-cluster-resources.py) on a standalone [ceph cluster](https://docs.ceph.com/en/pacific/cephadm/#cephadm) for creating all users/keys,
+
+```console
+python3 create-external-cluster-resources.py --rbd-data-pool-name <pool_name> --format bash
+```
+
+rbd-data-pool-name should be created, and if you need to have CephFS secret details you have to pass filesystem name, and if you need to create rgw_admin_ops_user you need to pass rgw_endpoint (Rados GateWay endpoint (in <IP>:<PORT> format)) 
+example: 
+```console
+python3 create-external-cluster-resources.py --rbd-data-pool-name <pool_name> --cephfs-filesystem-name <filesystem-name> --rgw-endpoint  <rgw-endpoint> --format bash
+```
+
+>Note: Use format bash, as to keep up with the further steps, and rbd-data-pool and cephfs-filesystem, should be created in advance.
+
+2. After that you need to copy the bash output.
+
+3. Now deploy Rook-Ceph, create [common.yaml](/deploy/examples/common.yaml), [crds.yaml](/deploy/examples/crds.yaml) and [operator.yaml](/deploy/examples/operator.yaml) manifests.
+
+4. Just paste the above output from `create-external-cluster-resources.py` into your current shell, it will export all the data.
+
+5. Run [import-external-cluster.sh](/deploy/examples/import-external-cluster.sh) file.
+```console
+. import-external-cluster.sh
+```
+
+6. Create [common-external.yaml](/deploy/examples/common-external.yaml) and [cluster-external.yaml](/deploy/examples/cluster-external.yaml)
+
+7. External-cluster will be connected to standalone ceph cluster, verify using:
+```console
+kubectl -n rook-ceph-external  get CephCluster
+NAME                 DATADIRHOSTPATH   MONCOUNT   AGE   PHASE       MESSAGE                          HEALTH
+rook-ceph-external                                38s   Connected   Cluster connected successfully   HEALTH_OK
+```
+
+>Note: If there is already a cluster managed by Rook in 'rook-ceph' then create [cluster-external-management.yaml](/deploy/examples/cluster-external-management.yaml)
